@@ -52,7 +52,7 @@ Alternative command to start the development server (same as `npm start`).
 
 Downloads all required JavaScript and CSS dependencies locally. This ensures the app works offline and doesn't rely on CDNs.
 
-- **Downloads:** jQuery 3.7.1 and Bootstrap 5.3.2
+- **Downloads:** jQuery 3.7.1, Bootstrap 5.3.2, and Papa Parse 5.4.1
 - **Run this first** before starting the application
 
 ### `npm run download-jquery`
@@ -69,6 +69,13 @@ Downloads Bootstrap CSS and JavaScript files to the assets directory.
 - **CSS Source:** <https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css>
 - **JS Source:** <https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js>
 - **Output:** `assets/css/bootstrap.min.css` and `assets/js/bootstrap.min.js`
+
+### `npm run download-papaparse`
+
+Downloads the Papa Parse CSV parsing library to handle codechecker data.
+
+- **Source:** <https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js>
+- **Output:** `assets/js/papaparse.min.js`
 
 ## How It Works
 
@@ -100,8 +107,10 @@ register-starter/
 │   ├── js/
 │   │   ├── jquery.min.js     # jQuery library (downloaded)
 │   │   ├── bootstrap.min.js  # Bootstrap JS (downloaded)
+│   │   ├── papaparse.min.js  # Papa Parse CSV library (downloaded)
 │   │   ├── config.js         # Configuration and constants
 │   │   ├── github-api.js     # GitHub API client
+│   │   ├── codechecker-manager.js # Codechecker data management
 │   │   ├── ui.js             # UI management and event handling
 │   │   └── app.js            # Main application logic
 │   └── images/               # Icons and images
@@ -118,6 +127,7 @@ This project uses the following third-party libraries:
 |---------|---------|---------|---------|
 | [jQuery](https://jquery.com/) | 3.7.1 | MIT | DOM manipulation and AJAX requests |
 | [Bootstrap](https://getbootstrap.com/) | 5.3.2 | MIT | CSS framework for responsive design |
+| [Papa Parse](https://www.papaparse.com/) | 5.4.1 | MIT | CSV parsing for codechecker data |
 
 All libraries are distributed under the MIT License, which is compatible with this project's Apache License 2.0.
 

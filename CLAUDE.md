@@ -16,6 +16,8 @@ A standalone JavaScript application that works against the GitHub Issues API to 
 - Utility functions are camelCase
 - We use functional components with hooks
 - We do not load JS or CSS from CDNs, all dependencies are managed locally via npm
+- We use libraries only from trusted sources with permissive licenses (MIT, Apache 2.0, etc.)
+- We prefer small libraries with specific functionality over large frameworks and over own implentations of typical tasks
 
 ## Design Standards
 

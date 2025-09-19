@@ -93,27 +93,96 @@ class GitHubAPI {
 
     /**
      * Extract certificate identifiers from issue titles
+     * Only processes issues with the "id assigned" label
      */
     extractIdentifiers(issues) {
         const identifiers = [];
 
-        issues.forEach(issue => {
-            if (issue.title) {
-                // Look for patterns like:
-                // - "2024-001"
-                // - "2025-042"
-                // - "[Author Name] | 2024-001"
-                // - "Some Title | 2025-003"
-                const patterns = [
-                    /(\d{4}-\d{3})/g,  // YYYY-XXX format
-                    /(\d{4}-\d{2})/g,  // YYYY-XX format
-                    /(\d{4}-\d{1})/g   // YYYY-X format
-                ];
+        // Filter issues to only those with "id assigned" label
+        const assignedIssues = issues.filter(issue => {
+            return issue.labels && issue.labels.some(label =>
+                label.name && label.name.toLowerCase() === 'id assigned'
+            );
+        });
 
-                patterns.forEach(pattern => {
-                    const matches = [...issue.title.matchAll(pattern)];
-                    matches.forEach(match => {
-                        const fullId = match[1];
+        console.log(`Processing ${assignedIssues.length} issues with "id assigned" label out of ${issues.length} total issues`);
+
+        if (assignedIssues.length > 0) {
+            console.log('Issues with "id assigned" label:');
+            assignedIssues.forEach(issue => {
+                console.log(`  - Issue #${issue.number}: "${issue.title}"`);
+            });
+        }
+
+        assignedIssues.forEach(issue => {
+            if (issue.title) {
+                // Look for range patterns first (e.g., "2025-020/2025-031")
+                // Match exactly YYYY-XXX/YYYY-XXX format (4 digits year, 3 digits number)
+                const rangePattern = /(\d{4}-\d{3})\/(\d{4}-\d{3})/g;
+                const rangeMatches = [...issue.title.matchAll(rangePattern)];
+
+                rangeMatches.forEach(match => {
+                    const startId = match[1];
+                    const endId = match[2];
+
+                    const [startYear, startNumberStr] = startId.split('-');
+                    const [endYear, endNumberStr] = endId.split('-');
+
+                    const startNumber = parseInt(startNumberStr);
+                    const endNumber = parseInt(endNumberStr);
+
+                    console.log(`Found range in "${issue.title}": ${startId} to ${endId} (${endNumber - startNumber + 1} identifiers)`);
+
+                    // Only process ranges within the same year
+                    if (parseInt(startYear) === parseInt(endYear)) {
+                        // Add all identifiers in the range
+                        for (let num = startNumber; num <= endNumber; num++) {
+                            const paddedNumber = num.toString().padStart(startNumberStr.length, '0');
+                            const fullId = `${startYear}-${paddedNumber}`;
+
+                            identifiers.push({
+                                full: fullId,
+                                year: parseInt(startYear),
+                                number: num,
+                                issueTitle: issue.title,
+                                issueNumber: issue.number,
+                                issueUrl: issue.html_url,
+                                isFromRange: true,
+                                rangeStart: startId,
+                                rangeEnd: endId
+                            });
+                        }
+                    } else {
+                        console.warn(`Skipping cross-year range: ${startId} to ${endId}`);
+                    }
+                });
+
+                // Then look for individual identifier patterns:
+                // Match exactly YYYY-XXX format (4 digits year, 3 digits number)
+                // Examples: "2024-001", "2025-042", "[Author Name] | 2024-001"
+                const identifierPattern = /(\d{4}-\d{3})/g;
+
+                const matches = [...issue.title.matchAll(identifierPattern)];
+                matches.forEach(match => {
+                    const fullId = match[1];
+
+                    // Skip if this identifier is already part of a range we processed
+                    const isPartOfRange = rangeMatches.some(rangeMatch => {
+                        const startId = rangeMatch[1];
+                        const endId = rangeMatch[2];
+                        const [startYear, startNumberStr] = startId.split('-');
+                        const [endYear, endNumberStr] = endId.split('-');
+                        const startNumber = parseInt(startNumberStr);
+                        const endNumber = parseInt(endNumberStr);
+                        const [year, numberStr] = fullId.split('-');
+                        const number = parseInt(numberStr);
+
+                        return parseInt(year) === parseInt(startYear) &&
+                               number >= startNumber &&
+                               number <= endNumber;
+                    });
+
+                    if (!isPartOfRange) {
                         const [year, numberStr] = fullId.split('-');
                         const number = parseInt(numberStr);
 
@@ -123,9 +192,10 @@ class GitHubAPI {
                             number: number,
                             issueTitle: issue.title,
                             issueNumber: issue.number,
-                            issueUrl: issue.html_url
+                            issueUrl: issue.html_url,
+                            isFromRange: false
                         });
-                    });
+                    }
                 });
             }
         });
@@ -142,7 +212,20 @@ class GitHubAPI {
             return a.number - b.number;
         });
 
-        console.log(`Found ${uniqueIdentifiers.length} certificate identifiers`);
+        console.log(`Found ${uniqueIdentifiers.length} certificate identifiers (including ranges)`);
+
+        // Debug: Log all identifiers for verification
+        if (uniqueIdentifiers.length > 0) {
+            const currentYearIds = uniqueIdentifiers.filter(id => id.year === 2025).map(id => id.full);
+            console.log(`2025 identifiers found: ${currentYearIds.join(', ')}`);
+
+            // Show range-derived identifiers specifically
+            const rangeIds = uniqueIdentifiers.filter(id => id.isFromRange && id.year === 2025);
+            if (rangeIds.length > 0) {
+                console.log(`Range-derived 2025 identifiers: ${rangeIds.map(id => id.full).join(', ')}`);
+            }
+        }
+
         return uniqueIdentifiers;
     }
 
@@ -151,8 +234,8 @@ class GitHubAPI {
      */
     calculateNextIdentifier(identifiers) {
         const currentYear = APP_CONFIG.currentYear;
-        const currentYearNumbers = identifiers
-            .filter(id => id.year === currentYear)
+        const currentYearIdentifiers = identifiers.filter(id => id.year === currentYear);
+        const currentYearNumbers = currentYearIdentifiers
             .map(id => id.number)
             .sort((a, b) => a - b); // Sort numbers for gap detection
 
@@ -166,32 +249,36 @@ class GitHubAPI {
         }
 
         let nextNumber = minNumber;
+        let highestIdentifier = null;
 
         if (currentYearNumbers.length > 0) {
-            // Find the first gap in the sequence, but not below minNumber
+            // Find the identifier with the highest number
             const maxNumber = Math.max(...currentYearNumbers);
+            highestIdentifier = currentYearIdentifiers.find(id => id.number === maxNumber);
 
-            for (let i = minNumber; i <= maxNumber + 1; i++) {
-                if (!currentYearNumbers.includes(i)) {
-                    nextNumber = i;
-                    break;
-                }
-            }
+            console.log(`Current year numbers: ${currentYearNumbers.join(', ')}`);
+            console.log(`Max number found: ${maxNumber}`);
 
-            // If no gaps found above minNumber, use the next number after max
-            if (nextNumber === minNumber && currentYearNumbers.includes(minNumber)) {
-                nextNumber = maxNumber + 1;
-            }
+            // Always use the next number after the highest assigned identifier
+            // This ensures sequential assignment rather than filling gaps
+            nextNumber = Math.max(minNumber, maxNumber + 1);
+
+            console.log(`Next number calculated: ${nextNumber}`);
         }
 
         const nextId = this.formatIdentifier(nextNumber);
 
         console.log(`Next available identifier: ${nextId} (min: ${minNumber})`);
+        if (highestIdentifier) {
+            console.log(`Highest current identifier: ${highestIdentifier.full} from issue #${highestIdentifier.issueNumber}`);
+        }
+
         return {
             identifier: nextId,
             year: currentYear,
             number: nextNumber,
-            isFirstOfYear: nextNumber === minNumber
+            isFirstOfYear: nextNumber === minNumber,
+            highestIdentifier: highestIdentifier
         };
     }
 

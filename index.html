@@ -13,7 +13,7 @@
     <!-- Custom styles -->
     <link rel="stylesheet" href="assets/css/main.css">
 
-    <link rel="icon" href="assets/images/favicon.ico">
+    <link rel="icon" href="https://codecheck.org.uk/favicon.ico">
 </head>
 <body>
     <header class="site-header">
@@ -48,7 +48,7 @@
                             <div class="card-header">
                                 <button class="btn btn-link p-0 text-decoration-none w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#repository-selection" aria-expanded="false" aria-controls="repository-selection">
                                     <h5 class="card-title mb-0">
-                                        Repository Selection
+                                        Repository Selection <span id="current-repository-indicator" class="text-muted small">- Production Register</span>
                                     </h5>
                                 </button>
                             </div>
@@ -97,7 +97,12 @@
                                 </div>
                                 <div class="card-body text-center">
                                     <h2 class="text-success mb-3" id="next-identifier-display">-</h2>
-                                    <p class="text-muted mb-4">This is the next available certificate identifier</p>
+                                    <p class="text-muted mb-4">
+                                        This is the next available certificate identifier
+                                        <span id="highest-identifier-link" style="display: none;">
+                                            (after <a href="#" target="_blank" id="highest-identifier-issue-link" class="text-decoration-none"></a>)
+                                        </span>
+                                    </p>
 
     
                                     <div class="mb-4">
@@ -129,9 +134,9 @@
                                     </div>
 
                                     <div class="mb-4">
-                                        <label for="issue-title-preview" class="form-label"><strong>Issue Title Preview:</strong></label>
-                                        <input type="text" class="form-control" id="issue-title-preview" readonly>
-                                        <div class="form-text">Edit manually as need be, e.g., if you want to reserve a range of identifiers in the format <code>2025-100/2025-103</code>.</div>
+                                        <label for="issue-title-preview" class="form-label"><strong>Issue Title:</strong></label>
+                                        <input type="text" class="form-control" id="issue-title-preview" placeholder="Issue title will be generated automatically">
+                                        <div class="form-text">Edit manually as needed, e.g., if you want to reserve a range of identifiers in the format <code>2025-100/2025-103</code>.</div>
                                     </div>
 
                                     <div class="mb-4">
@@ -298,6 +303,13 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label"><strong>Assigned Codecheckers (Preview):</strong></label>
+                        <div id="modal-codecheckers" class="p-2 bg-light border rounded">
+                            <!-- Assigned codecheckers will be displayed here -->
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="modal-body" class="form-label"><strong>Issue Body Template (Preview):</strong></label>
                         <div class="form-control bg-light" id="modal-body-preview" style="min-height: 200px; padding: 0.375rem 0.75rem; white-space: pre-wrap; font-family: monospace; font-size: 0.875rem;"></div>
                     </div>
@@ -380,6 +392,8 @@
     <!-- JavaScript dependencies -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
+    <!-- Papa Parse for CSV parsing -->
+    <script src="assets/js/papaparse.min.js"></script>
     <script src="assets/js/config.js"></script>
     <script src="assets/js/github-api.js"></script>
     <script src="assets/js/codechecker-manager.js"></script>

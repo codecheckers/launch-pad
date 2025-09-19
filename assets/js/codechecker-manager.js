@@ -43,37 +43,42 @@ class CodecheckerManager {
     }
 
     /**
-     * Parse CSV text into codechecker objects
+     * Parse CSV text into codechecker objects using Papa Parse
      */
     parseCSV(csvText) {
-        const lines = csvText.trim().split('\n');
-        const headers = this.parseCSVLine(lines[0]);
+        console.log('Parsing CSV with Papa Parse...');
 
-        console.log('CSV Headers:', headers);
+        // Use Papa Parse to handle the CSV parsing properly
+        const parseResult = Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true,
+            transformHeader: function(header) {
+                return header.trim();
+            },
+            transform: function(value) {
+                return value ? value.trim() : '';
+            }
+        });
+
+        if (parseResult.errors.length > 0) {
+            console.warn('CSV parsing errors:', parseResult.errors);
+        }
+
+        console.log('CSV Headers:', parseResult.meta.fields);
+        console.log(`Parsed ${parseResult.data.length} rows`);
 
         const codecheckers = [];
 
-        for (let i = 1; i < lines.length; i++) {
-            const values = this.parseCSVLine(lines[i]);
-
-            if (values.length < headers.length) {
-                continue; // Skip incomplete rows
-            }
-
-            const codechecker = {};
-            headers.forEach((header, index) => {
-                codechecker[header.trim()] = values[index] ? values[index].trim() : '';
-            });
-
-            // Extract the fields we need
+        parseResult.data.forEach((row, index) => {
+            // Extract the fields we need (handle different possible column names)
             const processedCodechecker = {
-                name: codechecker.name || codechecker.Name || '',
-                handle: this.extractHandle(codechecker.github || codechecker.GitHub || codechecker.handle || ''),
-                skills: codechecker.skills || codechecker.Skills || '',
-                language: codechecker.language || codechecker.Language || '',
-                fields: codechecker.fields || codechecker.Fields || '',
-                orcid: this.extractOrcid(codechecker.orcid || codechecker.ORCID || ''),
-                raw: codechecker // Keep original data for debugging
+                name: row.name || row.Name || '',
+                handle: this.extractHandle(row.github || row.GitHub || row.handle || ''),
+                skills: row.skills || row.Skills || '',
+                language: row.language || row.Language || row.languages || row.Languages || '',
+                fields: row.fields || row.Fields || '',
+                orcid: this.extractOrcid(row.orcid || row.ORCID || ''),
+                raw: row // Keep original data for debugging
             };
 
             // Create a comprehensive skills array combining skills, language, and fields
@@ -83,11 +88,23 @@ class CodecheckerManager {
                 processedCodechecker.fields
             );
 
+            // Debug logging for specific users to verify parsing
+            if (processedCodechecker.handle === 'nuest') {
+                console.log('Parsed data for nuest:');
+                console.log('  Skills:', processedCodechecker.skills);
+                console.log('  Language:', processedCodechecker.language);
+                console.log('  Fields:', processedCodechecker.fields);
+                console.log('  All Skills:', processedCodechecker.allSkills);
+                console.log('  Raw row:', processedCodechecker.raw);
+            }
+
             // Only include if we have at least a name or handle
             if (processedCodechecker.name || processedCodechecker.handle) {
                 codecheckers.push(processedCodechecker);
+            } else {
+                console.log(`Skipping row ${index + 1}: no name or handle found`, processedCodechecker);
             }
-        }
+        });
 
         return codecheckers.sort((a, b) => {
             const nameA = a.name || a.handle || '';
@@ -96,40 +113,6 @@ class CodecheckerManager {
         });
     }
 
-    /**
-     * Parse a single CSV line, handling quoted fields
-     */
-    parseCSVLine(line) {
-        const result = [];
-        let current = '';
-        let inQuotes = false;
-
-        for (let i = 0; i < line.length; i++) {
-            const char = line[i];
-
-            if (char === '"') {
-                if (inQuotes && line[i + 1] === '"') {
-                    // Escaped quote
-                    current += '"';
-                    i++; // Skip next quote
-                } else {
-                    // Toggle quote state
-                    inQuotes = !inQuotes;
-                }
-            } else if (char === ',' && !inQuotes) {
-                // Field separator
-                result.push(current);
-                current = '';
-            } else {
-                current += char;
-            }
-        }
-
-        // Add the last field
-        result.push(current);
-
-        return result;
-    }
 
     /**
      * Extract GitHub handle from various formats
@@ -172,17 +155,17 @@ class CodecheckerManager {
             if (field && field.trim()) {
                 // Split by common separators and clean up
                 const fieldSkills = field
-                    .split(/[,;\\n\\r]+/)
+                    .split(/[,;]+/)  // Only split on commas and semicolons
                     .map(skill => skill.trim())
                     .filter(skill => skill.length > 0)
-                    .filter(skill => skill.length < 50) // Filter out very long entries that might be descriptions
-                    .map(skill => skill.toLowerCase());
+                    .filter(skill => skill.length < 50); // Filter out very long entries that might be descriptions
+                    // Removed .toLowerCase() to preserve original capitalization
 
                 allSkills.push(...fieldSkills);
             }
         });
 
-        // Remove duplicates and return unique skills
+        // Remove duplicates and return unique skills (case-sensitive comparison)
         return [...new Set(allSkills)];
     }
 
@@ -206,8 +189,8 @@ class CodecheckerManager {
                 const nameMatch = name.includes(normalizedQuery);
                 const handleMatch = handle.includes(normalizedQuery);
 
-                // Check if query matches any skill
-                const skillMatch = skills.some(skill => skill.includes(normalizedQuery));
+                // Check if query matches any skill (case-insensitive)
+                const skillMatch = skills.some(skill => skill.toLowerCase().includes(normalizedQuery));
 
                 return nameMatch || handleMatch || skillMatch;
             })
@@ -245,9 +228,9 @@ class CodecheckerManager {
             matchInfo.handleMatches.push(query);
         }
 
-        // Find skill matches
+        // Find skill matches (case-insensitive)
         skills.forEach(skill => {
-            if (skill.includes(query)) {
+            if (skill.toLowerCase().includes(query)) {
                 matchInfo.skillMatches.push(skill);
             }
         });
@@ -282,15 +265,14 @@ class CodecheckerManager {
     formatSkillsWithHighlight(skills, matchingSkills, query) {
         if (!skills || skills.length === 0) return '';
 
-        // Show all skills without abbreviation
+        // Show all skills without abbreviation, preserving original capitalization
         const formattedSkills = skills.map(skill => {
-            const isMatching = matchingSkills.includes(skill.toLowerCase());
-            const capitalizedSkill = skill.charAt(0).toUpperCase() + skill.slice(1);
+            const isMatching = matchingSkills.includes(skill);
 
             if (isMatching) {
-                return this.highlightMatches(capitalizedSkill, query);
+                return this.highlightMatches(skill, query);
             }
-            return capitalizedSkill;
+            return skill;
         });
 
         return formattedSkills.join(', ');

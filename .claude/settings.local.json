@@ -7,7 +7,9 @@
       "Bash(npm start)",
       "Bash(npm run download-marked:*)",
       "WebFetch(domain:api.github.com)",
-      "Read(//home/daniel/git/codecheck/buddy-exchange/**)"
+      "Read(//home/daniel/git/codecheck/buddy-exchange/**)",
+      "Bash(python3:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

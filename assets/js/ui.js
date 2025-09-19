@@ -15,6 +15,7 @@ class LaunchPadUI {
         this.searchTimeout = null;
         this.defaultDescriptionTemplate = ISSUE_TEMPLATES['codecheck-entry'].trim();
         this.highlightedCodecheckerIndex = -1; // For keyboard navigation
+        this.titleManuallyEdited = false; // Track if user manually edited the title
     }
 
     /**
@@ -33,6 +34,8 @@ class LaunchPadUI {
             repositoryRadios: $('input[name="repository"]'),
             testingRepo: $('#testing-repo'),
             productionRepo: $('#production-repo'),
+            repositorySelection: $('#repository-selection'),
+            currentRepositoryIndicator: $('#current-repository-indicator'),
 
 
             // Loading and error states
@@ -44,6 +47,8 @@ class LaunchPadUI {
             // Results
             resultsContainer: $('#results-container'),
             nextIdentifierDisplay: $('#next-identifier-display'),
+            highestIdentifierLink: $('#highest-identifier-link'),
+            highestIdentifierIssueLink: $('#highest-identifier-issue-link'),
             authorNames: $('#author-names'),
             issueDescription: $('#issue-description'),
             issueTitlePreview: $('#issue-title-preview'),
@@ -90,9 +95,13 @@ class LaunchPadUI {
             modalIdentifier: $('#modal-identifier'),
             modalTitlePreview: $('#modal-title-preview'),
             modalLabels: $('#modal-labels'),
+            modalCodecheckers: $('#modal-codecheckers'),
             modalBodyPreview: $('#modal-body-preview'),
             githubCreateLink: $('#github-create-link')
         };
+
+        // Set initial repository indicator
+        this.updateRepositoryIndicator();
 
         console.log('UI initialized successfully');
     }
@@ -108,7 +117,17 @@ class LaunchPadUI {
             this.currentRepository = e.target.value;
             this.resetResults();
             this.loadRepositoryLabels();
+            this.updateRepositoryIndicator();
             console.log(`Repository changed to: ${this.currentRepository}`);
+        });
+
+        // Repository selection collapse/expand
+        this.elements.repositorySelection.on('show.bs.collapse', () => {
+            this.elements.currentRepositoryIndicator.hide();
+        });
+
+        this.elements.repositorySelection.on('hide.bs.collapse', () => {
+            this.elements.currentRepositoryIndicator.show();
         });
 
 
@@ -126,6 +145,16 @@ class LaunchPadUI {
         this.elements.authorNames.on('input', () => {
             this.authorNames = this.elements.authorNames.val().trim();
             this.updateIssuePreview();
+        });
+
+        // Issue title input - track manual edits
+        this.elements.issueTitlePreview.on('input', () => {
+            this.titleManuallyEdited = true;
+        });
+
+        this.elements.issueTitlePreview.on('focus', () => {
+            // When user focuses on title, mark as manually edited
+            this.titleManuallyEdited = true;
         });
 
         // Issue description input - handle template behavior
@@ -235,6 +264,16 @@ class LaunchPadUI {
 
         this.elements.nextIdentifierDisplay.text(identifierData.identifier);
 
+        // Show link to highest identifier issue if available
+        if (identifierData.highestIdentifier) {
+            const highest = identifierData.highestIdentifier;
+            this.elements.highestIdentifierIssueLink.attr('href', highest.issueUrl);
+            this.elements.highestIdentifierIssueLink.text(`${highest.full} in issue #${highest.issueNumber}`);
+            this.elements.highestIdentifierLink.show();
+        } else {
+            this.elements.highestIdentifierLink.hide();
+        }
+
         // Auto-select "id assigned" label when identifier is retrieved
         if (!this.selectedLabels.includes('id assigned')) {
             this.selectedLabels.push('id assigned');
@@ -266,10 +305,12 @@ class LaunchPadUI {
         if (!this.currentIdentifier) return;
 
         try {
-            const github = window.app.githubAPI;
-            const title = github.generateIssueTitle('certificate', this.currentIdentifier.identifier, this.authorNames);
-
-            this.elements.issueTitlePreview.val(title);
+            // Only auto-update the title if user hasn't manually edited it
+            if (!this.titleManuallyEdited) {
+                const github = window.app.githubAPI;
+                const title = github.generateIssueTitle('certificate', this.currentIdentifier.identifier, this.authorNames);
+                this.elements.issueTitlePreview.val(title);
+            }
         } catch (error) {
             console.error('Error updating issue preview:', error);
         }
@@ -409,6 +450,75 @@ class LaunchPadUI {
     }
 
     /**
+     * Format ORCID iD according to official guidelines
+     * @param {string} orcid - The ORCID identifier
+     * @param {boolean} includeIcon - Whether to include the ORCID icon (default: true)
+     * @param {boolean} makeClickable - Whether to make the ORCID URL clickable (default: true)
+     */
+    formatOrcidDisplay(orcid, includeIcon = true, makeClickable = true) {
+        if (!orcid) return '';
+
+        const orcidUrl = `https://orcid.org/${orcid}`;
+
+        if (!includeIcon) {
+            // Simple version without icon for compact displays like search results
+            if (makeClickable) {
+                return `<a href="${orcidUrl}" target="_blank" rel="noopener" class="text-decoration-none text-info">https://orcid.org/${orcid}</a>`;
+            } else {
+                // Non-clickable version for search results to preserve item clickability
+                return `<span class="text-info">https://orcid.org/${orcid}</span>`;
+            }
+        }
+
+        // Official ORCID iD icon (green version) for modal display
+        const orcidIcon = `<svg width="16" height="16" viewBox="0 0 256 256" style="background:white;" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#A6CE39" d="M256,128c0,70.7-57.3,128-128,128C57.3,256,0,198.7,0,128C0,57.3,57.3,0,128,0C198.7,0,256,57.3,256,128z"/>
+            <g>
+                <path fill="#fff" d="M86.3,186.2H70.9V79.1h15.4v48.4V186.2z"/>
+                <path fill="#fff" d="M108.9,79.1h41.6c39.6,0,57,28.3,57,53.6c0,27.5-21.5,53.6-56.8,53.6h-41.8V79.1z M124.3,172.4h24.5c21.9,0,41.8-11.7,41.8-39.8c0-26.9-17.3-39.8-41.8-39.8h-24.5V172.4z"/>
+                <circle fill="#fff" cx="78.2" cy="41.7" r="11.9"/>
+            </g>
+        </svg>`;
+
+        if (makeClickable) {
+            return `${orcidIcon} <a href="${orcidUrl}" target="_blank" rel="noopener" class="text-decoration-none text-info">https://orcid.org/${orcid}</a>`;
+        } else {
+            return `${orcidIcon} <span class="text-info">https://orcid.org/${orcid}</span>`;
+        }
+    }
+
+    /**
+     * Display selected codecheckers in the modal preview
+     */
+    displaySelectedCodecheckers(container) {
+        container.empty();
+
+        if (this.selectedCodecheckers.length === 0) {
+            container.append('<span class="text-muted">No codecheckers assigned</span>');
+            return;
+        }
+
+        this.selectedCodecheckers.forEach(codechecker => {
+            const orcidDisplay = codechecker.orcid ? this.formatOrcidDisplay(codechecker.orcid) : '';
+
+            const codecheckerElement = $(`
+                <div class="d-flex align-items-center mb-2">
+                    <div class="me-3">
+                        <strong>${codechecker.name || codechecker.handle}</strong>
+                        <div class="text-muted small">@${codechecker.handle}</div>
+                        ${orcidDisplay ? `<div class="text-info small">${orcidDisplay}</div>` : ''}
+                    </div>
+                    ${codechecker.allSkills && codechecker.allSkills.length > 0 ?
+                        `<div class="text-secondary small"><strong>Skills:</strong> ${codechecker.allSkills.join(', ')}</div>` : ''
+                    }
+                </div>
+            `);
+
+            container.append(codecheckerElement);
+        });
+    }
+
+    /**
      * Update statistics display
      */
     updateStatistics(stats) {
@@ -475,7 +585,9 @@ class LaunchPadUI {
             const github = window.app.githubAPI;
             const repoConfig = GITHUB_CONFIG[this.currentRepository];
 
-            const title = github.generateIssueTitle('certificate', this.currentIdentifier.identifier, this.authorNames);
+            // Use the current value from the title input (either auto-generated or manually edited)
+            const title = this.elements.issueTitlePreview.val().trim() ||
+                         github.generateIssueTitle('certificate', this.currentIdentifier.identifier, this.authorNames);
 
             // Create issue body using user input or template
             const userDescription = this.elements.issueDescription.val().trim();
@@ -497,6 +609,7 @@ class LaunchPadUI {
             this.elements.modalBodyPreview.text(body);
 
             this.displaySelectedLabels(this.elements.modalLabels);
+            this.displaySelectedCodecheckers(this.elements.modalCodecheckers);
 
             // Generate GitHub URL with multiple assignees
             const assignees = this.selectedCodecheckers.map(c => c.handle);
@@ -600,6 +713,9 @@ class LaunchPadUI {
                 // Build skills display
                 const skillsSection = skillsHtml ? `<div class="text-secondary small mt-1"><strong>Skills:</strong> ${skillsHtml}</div>` : '';
 
+                // Build ORCID display (without icon, non-clickable for search results)
+                const orcidSection = codechecker.orcid ? `<div class="text-info small mt-1">${this.formatOrcidDisplay(codechecker.orcid, false, false)}</div>` : '';
+
                 const item = $(`
                     <a href="#" class="dropdown-item codechecker-item" data-handle="${codechecker.handle}">
                         <div class="d-flex justify-content-between align-items-start">
@@ -607,7 +723,7 @@ class LaunchPadUI {
                                 <div class="fw-bold">${highlightedName}</div>
                                 <div class="text-muted small">@${highlightedHandle}</div>
                                 ${skillsSection}
-                                ${codechecker.orcid ? `<div class="text-info small"><i class="bi bi-person-badge"></i> ORCID: ${codechecker.orcid}</div>` : ''}
+                                ${orcidSection}
                             </div>
                         </div>
                     </a>
@@ -816,16 +932,28 @@ class LaunchPadUI {
         this.currentStats = null;
         this.selectedLabels = ['certificate', 'needs codechecker']; // Reset to default
         this.authorNames = '';
+        this.titleManuallyEdited = false; // Reset title edit tracking
         this.elements.authorNames.val('');
+        this.elements.issueTitlePreview.val(''); // Clear the title field
         this.clearCodecheckerSelection();
         this.elements.issueDescription.val(this.defaultDescriptionTemplate); // Reset to template
         this.elements.issueDescription.removeClass('editing-template');
+        this.elements.highestIdentifierLink.hide(); // Hide the highest identifier link
         this.elements.resultsContainer.hide();
         this.elements.statsContainer.hide();
         this.elements.createIssueBtn.prop('disabled', true);
         this.hideError();
     }
 
+
+    /**
+     * Update the repository indicator text based on current selection
+     */
+    updateRepositoryIndicator() {
+        const repoConfig = GITHUB_CONFIG[this.currentRepository];
+        const displayText = repoConfig ? `- ${repoConfig.name}` : '- Unknown Repository';
+        this.elements.currentRepositoryIndicator.text(displayText);
+    }
 
     /**
      * Get currently selected repository
