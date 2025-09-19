@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CODECHECK Launch Pad</title>
+    <meta name="description" content="Create new issues for the CODECHECK Register with the next available identifier and correct tags">
+
+    <!-- External CODECHECK CSS -->
+    <link rel="stylesheet" href="https://codecheck.org.uk/assets/main.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="assets/css/main.css">
+
+    <link rel="icon" href="assets/images/favicon.ico">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="d-flex align-items-center">
+                <img src="https://codecheck.org.uk/img/codecheck_logo.svg" alt="CODECHECK Logo" class="logo me-3">
+                <h1 class="site-title">Launch Pad</h1>
+            </div>
+            <p class="site-description mt-4 mb-4 px-2"><strong>Start new CODECHECKs with some help to create new register issues!</strong> This tool helps you identify the next available certificate identifier, to set the correct labels for new issues, and to identify suitable codecheckers.</p>
+        </div>
+    </header>
+
+    <main id="app" class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <!-- Start Button -->
+                <div class="text-center mb-5">
+                    <div class="row justify-content-center">
+                        <div class="col-md-4 mb-3">
+                            <button id="get-next-identifier-btn" class="btn btn-success btn-lg w-100 py-3">
+                                <i class="bi bi-plus-circle me-2"></i>Start next CODECHECK
+                            </button>
+                            <p class="mt-2 text-muted small">Find the next certificate identifier and add check metadata</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Register Repository Selection -->
+                <div class="row justify-content-center mb-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <button class="btn btn-link p-0 text-decoration-none w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#repository-selection" aria-expanded="false" aria-controls="repository-selection">
+                                    <h5 class="card-title mb-0">
+                                        Repository Selection
+                                    </h5>
+                                </button>
+                            </div>
+                            <div class="collapse" id="repository-selection">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="repository" id="testing-repo" value="testing">
+                                        <label class="form-check-label" for="testing-repo">
+                                            <strong>Testing Register</strong> (<a href="https://github.com/codecheckers/testing-dev-register/issues" target="_blank" class="text-decoration-none">codecheckers/testing-dev-register</a>)
+                                            <br><small class="text-muted">For development and testing purposes</small>
+                                        </label>
+                                    </div>
+                                    <div class="form-check mt-3">
+                                        <input class="form-check-input" type="radio" name="repository" id="production-repo" value="production" checked>
+                                        <label class="form-check-label" for="production-repo">
+                                            <strong>Production Register</strong> (<a href="https://github.com/codecheckers/register/issues" target="_blank" class="text-decoration-none">codecheckers/register</a>)
+                                            <br><small class="text-muted">For live CODECHECK certificates</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading and Error States -->
+                <div id="loading" class="text-center" style="display: none;">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p id="loading-message">Analyzing register...</p>
+                </div>
+
+                <div id="error" class="alert alert-danger" style="display: none;" role="alert">
+                    <h4 class="alert-heading">Error</h4>
+                    <p id="error-message"></p>
+                </div>
+
+                <!-- Results Section -->
+                <div id="results-container" style="display: none;">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Start next CODECHECK</h5>
+                                </div>
+                                <div class="card-body text-center">
+                                    <h2 class="text-success mb-3" id="next-identifier-display">-</h2>
+                                    <p class="text-muted mb-4">This is the next available certificate identifier</p>
+
+    
+                                    <div class="mb-4">
+                                        <label for="author-names" class="form-label"><strong>Author Names:</strong></label>
+                                        <input type="text" class="form-control" id="author-names" placeholder="Enter author names (e.g., John Doe, Jane Smith)" maxlength="200">
+                                        <div class="form-text">Enter the names of all authors for this work.</div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="codechecker-search" class="form-label"><strong>Assign Codecheckers:</strong></label>
+                                        <div class="position-relative">
+                                            <input type="text" class="form-control" id="codechecker-search" placeholder="Search by name, GitHub handle, skill, or expertise ..." autocomplete="off">
+                                            <div id="codechecker-loading" class="position-absolute top-50 end-0 translate-middle-y me-3" style="display: none;">
+                                                <div class="spinner-border spinner-border-sm" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>
+                                            <div id="codechecker-dropdown" class="dropdown-menu w-100" style="display: none; max-height: 300px; overflow-y: auto;">
+                                                <!-- Codechecker suggestions will be populated here -->
+                                            </div>
+                                        </div>
+                                        <div class="form-text">
+                                            Search for codecheckers from the CODECHECK organization. Click to add multiple.
+                                            <span id="codecheckers-count" class="text-muted"></span>
+                                        </div>
+                                        <div id="selected-codecheckers" class="mt-2">
+                                            <!-- Selected codecheckers will be displayed here as badges -->
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="issue-title-preview" class="form-label"><strong>Issue Title Preview:</strong></label>
+                                        <input type="text" class="form-control" id="issue-title-preview" readonly>
+                                        <div class="form-text">Edit manually as need be, e.g., if you want to reserve a range of identifiers.</div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label"><strong>Labels Selection:</strong></label>
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <div id="labels-loading" class="text-center" style="display: none;">
+                                                    <div class="spinner-border spinner-border-sm" role="status">
+                                                        <span class="visually-hidden">Loading labels...</span>
+                                                    </div>
+                                                    <span class="ms-2">Loading available labels...</span>
+                                                </div>
+                                                <div id="labels-error" class="alert alert-warning" style="display: none;">
+                                                    <small>Unable to load repository labels. Using default labels.</small>
+                                                </div>
+                                                <div id="available-labels" class="d-flex flex-wrap gap-2">
+                                                    <!-- Available labels will be populated here -->
+                                                </div>
+                                                <div class="mt-3">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-info-circle me-1"></i>
+                                                        Click labels to select/deselect them for the issue.
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="issue-description" class="form-label"><strong>Issue Description:</strong></label>
+                                        <textarea class="form-control" id="issue-description" rows="4">**Work**: [Paper title, DOI, link, venue, etc.]
+
+**Repository and workflow**: code and/or data [URL, DOI, etc.]</textarea>
+                                        <div class="form-text">
+                                            Provide information about the work to be checked.
+                                        </div>
+                                    </div>
+
+                                    <!-- Create Issue Button -->
+                                    <div class="text-center mt-4">
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-4 mb-3">
+                                                <button id="create-issue-btn" class="btn btn-primary btn-lg w-100 py-3" disabled>
+                                                    <i class="bi bi-github me-2"></i>Create Issue
+                                                </button>
+                                                <p class="mt-2 text-muted small">See a preview of the new issue and create the draft on GitHub.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Section -->
+                <div id="stats-container" class="mt-5" style="display: none;">
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="card-title mb-0">Register Statistics</h6>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Overview Statistics -->
+                                    <div class="row text-center mb-4">
+                                        <div class="col-md-4">
+                                            <a href="#" id="number-of-checks-link" target="_blank" class="stat-link text-decoration-none">
+                                                <div class="h4 mb-0 text-primary" id="number-of-checks">-</div>
+                                                <small class="text-muted">Check Issues</small>
+                                                <div class="mt-1">
+                                                    <small class="text-muted" style="font-size: 0.75rem;">
+                                                        (Some issues cover multiple certificates)
+                                                    </small>
+                                                </div>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <a href="#" id="ongoing-checks-link" target="_blank" class="stat-link text-decoration-none">
+                                                <div class="h4 mb-0 text-warning" id="ongoing-checks">-</div>
+                                                <small class="text-muted">Ongoing Check Issues</small>
+                                            </a>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div>
+                                                <small id="last-updated" class="text-muted">-</small>
+                                                <br><small class="text-muted">Last Updated</small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Completed Checks by Category -->
+                                    <div class="border-top pt-3">
+                                        <h6 class="text-center mb-3">Completed Checks by Category</h6>
+                                        <div class="row text-center">
+                                            <div class="col-6 col-lg">
+                                                <a href="#" id="institution-link" target="_blank" class="stat-link text-decoration-none">
+                                                    <div class="h5 mb-0" id="institution-count">-</div>
+                                                    <small class="text-muted">Institution</small>
+                                                </a>
+                                            </div>
+                                            <div class="col-6 col-lg">
+                                                <a href="#" id="journal-link" target="_blank" class="stat-link text-decoration-none">
+                                                    <div class="h5 mb-0" id="journal-count">-</div>
+                                                    <small class="text-muted">Journal</small>
+                                                </a>
+                                            </div>
+                                            <div class="col-6 col-lg">
+                                                <a href="#" id="community-link" target="_blank" class="stat-link text-decoration-none">
+                                                    <div class="h5 mb-0" id="community-count">-</div>
+                                                    <small class="text-muted">Community</small>
+                                                </a>
+                                            </div>
+                                            <div class="col-6 col-lg">
+                                                <a href="#" id="conference-workshop-link" target="_blank" class="stat-link text-decoration-none">
+                                                    <div class="h5 mb-0" id="conference-workshop-count">-</div>
+                                                    <small class="text-muted">Conference/Workshop</small>
+                                                </a>
+                                            </div>
+                                            <div class="col-12 col-lg">
+                                                <a href="#" id="needs-codechecker-link" target="_blank" class="stat-link text-decoration-none">
+                                                    <div class="h5 mb-0" id="needs-codechecker-count">-</div>
+                                                    <small class="text-muted">Needs Codechecker</small>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Create Issue Modal -->
+    <div class="modal fade" id="createIssueModal" tabindex="-1" aria-labelledby="createIssueModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createIssueModalLabel">📋 Issue Preview (Read-Only)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <h6>📋 Issue Details:</h6>
+                        <ul class="mb-0">
+                            <li><strong>Repository:</strong> <span id="modal-repository">-</span></li>
+                            <li><strong>Identifier:</strong> <span id="modal-identifier">-</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modal-title" class="form-label"><strong>Issue Title (Preview):</strong></label>
+                        <div class="form-control bg-light" id="modal-title-preview" style="min-height: 38px; padding: 0.375rem 0.75rem; font-family: monospace;"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Selected Labels (Preview):</strong></label>
+                        <div id="modal-labels" class="d-flex flex-wrap gap-2 p-2 bg-light border rounded">
+                            <!-- Selected labels will be displayed here -->
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modal-body" class="form-label"><strong>Issue Body Template (Preview):</strong></label>
+                        <div class="form-control bg-light" id="modal-body-preview" style="min-height: 200px; padding: 0.375rem 0.75rem; white-space: pre-wrap; font-family: monospace; font-size: 0.875rem;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <a href="#" id="github-create-link" target="_blank" class="btn btn-success">
+                        <i class="bi bi-github me-2"></i>Create on GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer id="site-footer" class="mt-5 py-4 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3">
+                    <div class="h5 pt-4">CODECHECK</div>
+                    <ul class="list-unstyled">
+                        <li class="text-secondary">© Stephen Eglen & Daniel Nüst</li>
+                        <li class="text-secondary">
+                            Published under
+                            <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a><br>
+                            <a href="https://creativecommons.org/licenses/by-sa/4.0/">
+                                <img alt="license logo" title="license logo" src="https://codecheck.org.uk/img/by-sa.svg" style="height: 20px;">
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-6 col-lg-3">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a href="mailto:team@cdchck.science">
+                                <img src="assets/images/icon-email.svg" alt="" class="footer-icon me-2">team@cdchck.science
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/codecheckers/" target="_blank">
+                                <img src="assets/images/icon-github.svg" alt="" class="footer-icon me-2">github.com/codecheckers
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://gitlab.com/cdchck" target="_blank">
+                                <img src="assets/images/icon-gitlab.svg" alt="" class="footer-icon me-2">gitlab.com/cdchck
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://fediscience.org/@codecheck" target="_blank">
+                                <img src="assets/images/icon-mastodon.svg" alt="" class="footer-icon me-2">codecheck@fediscience.org
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.linkedin.com/company/codecheck/" target="_blank">
+                                <img src="assets/images/icon-linkedin.svg" alt="" class="footer-icon me-2">linkedin.com/company/codecheck/
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.youtube.com/@cdchck" target="_blank">
+                                <img src="assets/images/icon-youtube.svg" alt="" class="footer-icon me-2">youtube.com/@cdchck
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-12 col-lg">
+                    <p class="text-secondary">CODECHECK is a process for independent execution of computations underlying scholarly research articles.</p>
+                    <p>Need help? Check out the <strong><a href="https://codecheck.org.uk/faq">FAQs</a></strong>.</p>
+                    <p class="mt-3">
+                        <a href="https://github.com/codecheckers/register" target="_blank">CODECHECK Register</a>
+                        •
+                        <a href="https://github.com/codecheckers/testing-dev-register" target="_blank">Testing Register</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript dependencies -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/github-api.js"></script>
+    <script src="assets/js/codechecker-manager.js"></script>
+    <script src="assets/js/ui.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>

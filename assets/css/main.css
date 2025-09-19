@@ -1,0 +1,580 @@
+/**
+ * Custom styles for CODECHECK 
+ * Complements the external CODECHECK CSS from codecheck.org.uk
+ */
+
+/* Layout and Typography */
+.site-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem 0;
+}
+
+.site-title {
+    color: #008033;
+    font-weight: 600;
+    margin: 0;
+}
+
+.site-description {
+    color: #6c757d;
+    margin-bottom: 0;
+    font-size: 1.1rem;
+}
+
+.logo {
+    max-height: 48px;
+    width: auto;
+}
+
+/* Main Action Cards */
+.action-card {
+    border: 2px solid #008033;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 128, 51, 0.1);
+    background-color: #f8f9fa;
+}
+
+.action-card:hover {
+    border-color: #006629;
+    box-shadow: 0 4px 12px rgba(0, 128, 51, 0.2);
+    transform: translateY(-2px);
+    background-color: #e8f5ea;
+}
+
+.action-card .card-header {
+    background-color: #008033;
+    color: white;
+    border-bottom: none;
+    padding: 0.75rem 1rem;
+}
+
+.action-card .card-body {
+    padding: 1rem;
+    background-color: #f0f9f4;
+}
+
+/* Result Cards */
+.result-card {
+    border: 2px solid #008033;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 128, 51, 0.1);
+    background-color: #ffffff;
+}
+
+.result-card .card-header {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+}
+
+.result-card .card-body {
+    background-color: #ffffff;
+}
+
+/* Repository Selection */
+.form-check-input:checked {
+    background-color: #008033;
+    border-color: #008033;
+}
+
+.form-check-input:focus {
+    border-color: #008033;
+    box-shadow: 0 0 0 0.25rem rgba(0, 128, 51, 0.25);
+}
+
+/* Collapsible repository selection */
+.card-header .btn-link {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+.card-header .btn-link:hover {
+    color: #495057;
+}
+
+.card-header .btn-link[aria-expanded="true"] .bi-chevron-down {
+    transform: rotate(180deg);
+}
+
+.card-header .bi-chevron-down {
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Arrow indicators for collapsed/expanded state */
+.card-header .btn-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header .btn-link[aria-expanded="false"]::after {
+    content: "▼";
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.card-header .btn-link[aria-expanded="true"]::after {
+    content: "▲";
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+
+/* Buttons */
+.btn-primary {
+    background-color: #008033;
+    border-color: #008033;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #006629;
+    border-color: #006629;
+}
+
+.btn-success {
+    background-color: #008033;
+    border-color: #008033;
+}
+
+.btn-success:hover,
+.btn-success:focus {
+    background-color: #006629;
+    border-color: #006629;
+}
+
+/* Modal buttons */
+.modal .btn-secondary {
+    background-color: #008033;
+    border-color: #008033;
+    color: white;
+}
+
+.modal .btn-secondary:hover,
+.modal .btn-secondary:focus {
+    background-color: #006629;
+    border-color: #006629;
+    color: white;
+}
+
+/* Labels Display */
+.label-badge {
+    display: inline-block;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 4px;
+    text-decoration: none;
+    color: white;
+    margin: 0.125rem;
+    border: 1px solid transparent;
+    transition: all 0.2s ease-in-out;
+}
+
+.label-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    border-color: rgba(0, 0, 0, 0.2);
+    color: white;
+    text-decoration: none;
+}
+
+/* Default label color for certificate */
+.label-certificate {
+    background-color: #008033;
+}
+
+/* Interactive label styles */
+.label-selectable {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+}
+
+.label-selectable:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.label-selectable.selected {
+    border-color: #008033;
+    box-shadow: 0 0 0 1px #008033;
+}
+
+.label-selectable:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 128, 51, 0.25);
+}
+
+/* Auto-managed labels */
+.label-auto-managed {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.label-auto-managed:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: transparent;
+}
+
+/* Loading states */
+.spinner-border {
+    color: #008033;
+}
+
+#loading {
+    color: #008033;
+    padding: 2rem 0;
+}
+
+/* Statistics */
+.h4, .h5 {
+    color: #008033;
+    font-weight: 600;
+}
+
+/* Statistics styling */
+#stats-container .text-primary {
+    color: #008033 !important;
+}
+
+#stats-container .text-warning {
+    color: #fd7e14 !important;
+}
+
+#stats-container .text-success {
+    color: #198754 !important;
+}
+
+/* Category statistics */
+#stats-container .border-top {
+    border-color: #dee2e6 !important;
+}
+
+/* Clickable statistics styling */
+.stat-link {
+    display: block;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.stat-link:hover {
+    background-color: rgba(0, 128, 51, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 128, 51, 0.2);
+}
+
+.stat-link:hover .h4,
+.stat-link:hover .h5 {
+    color: #006629 !important;
+}
+
+.stat-link:hover small {
+    color: #495057 !important;
+}
+
+.stat-link:focus {
+    outline: none;
+    background-color: rgba(0, 128, 51, 0.15);
+    box-shadow: 0 0 0 3px rgba(0, 128, 51, 0.25);
+}
+
+/* Add subtle icon to indicate links */
+.stat-link::after {
+    content: "🔗";
+    opacity: 0;
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.stat-link:hover::after {
+    opacity: 0.7;
+}
+
+/* Responsive statistics layout */
+@media (max-width: 768px) {
+    #stats-container .col-6.col-lg {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    #stats-container .col-12.col-lg {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-top: 1rem;
+    }
+
+    .stat-link {
+        padding: 0.25rem;
+    }
+}
+
+/* Footer */
+.site-footer {
+    border-top: 1px solid #dee2e6;
+    margin-top: 3rem;
+}
+
+.site-footer a {
+    color: #008033;
+    text-decoration: none;
+}
+
+.site-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Footer icons */
+.footer-icon {
+    width: 16px;
+    height: 16px;
+    vertical-align: text-bottom;
+    filter: invert(23%) sepia(95%) saturate(1352%) hue-rotate(124deg) brightness(96%) contrast(101%);
+}
+
+.footer-icon:hover {
+    filter: invert(23%) sepia(95%) saturate(1352%) hue-rotate(124deg) brightness(80%) contrast(101%);
+}
+
+/* Codechecker selection styling */
+#codechecker-dropdown {
+    position: absolute !important;
+    top: calc(100% + 2px) !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 9999 !important;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: white;
+    display: block;
+    width: 100% !important;
+}
+
+/* Ensure the codechecker search container has proper positioning context */
+#codechecker-search {
+    position: relative;
+}
+
+/* Ensure the dropdown container doesn't interfere with layout */
+.position-relative {
+    z-index: 1;
+}
+
+/* Search result highlighting */
+#codechecker-dropdown mark {
+    background-color: rgba(0, 128, 51, 0.2);
+    color: #008033;
+    padding: 1px 2px;
+    border-radius: 2px;
+    font-weight: 600;
+}
+
+.codechecker-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+.codechecker-item:last-child {
+    border-bottom: none;
+}
+
+.codechecker-item:hover {
+    background-color: rgba(0, 128, 51, 0.1);
+    color: inherit;
+    text-decoration: none;
+}
+
+.codechecker-item .fw-bold {
+    color: #008033;
+}
+
+/* Keyboard navigation highlighting */
+.codechecker-item.keyboard-highlighted {
+    background-color: rgba(0, 128, 51, 0.15);
+    border-left: 3px solid #008033;
+}
+
+.codechecker-item.keyboard-highlighted .fw-bold {
+    color: #006629;
+}
+
+/* Selected codecheckers display */
+.selected-codechecker-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: rgba(0, 128, 51, 0.1);
+    border: 1px solid #008033;
+    border-radius: 20px;
+    padding: 0.375rem 0.75rem;
+    margin: 0.25rem 0.25rem 0.25rem 0;
+    font-size: 0.875rem;
+}
+
+.selected-codechecker-badge .codechecker-info {
+    margin-right: 0.5rem;
+}
+
+.selected-codechecker-badge .btn-close {
+    font-size: 0.7rem;
+    width: 1rem;
+    height: 1rem;
+    background-size: 0.6rem;
+    margin-left: 0.25rem;
+}
+
+.selected-codechecker-badge .codechecker-name {
+    font-weight: 600;
+    color: #008033;
+}
+
+.selected-codechecker-badge .codechecker-handle {
+    color: #6c757d;
+    margin-left: 0.25rem;
+}
+
+#codechecker-loading {
+    pointer-events: none;
+}
+
+/* Form styling */
+.form-control:focus {
+    border-color: #008033;
+    box-shadow: 0 0 0 0.25rem rgba(0, 128, 51, 0.25);
+}
+
+/* Issue description template styling */
+#issue-description.editing-template {
+    border-color: #008033;
+    background-color: #f8fff8;
+}
+
+/* Alert styling */
+.alert-info {
+    border-color: #008033;
+    background-color: #e8f5ea;
+    color: #006629;
+}
+
+.alert-danger {
+    border-color: #dc3545;
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Modal styling */
+.modal-content {
+    border: 2px solid #008033;
+    border-radius: 8px;
+}
+
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-title {
+    color: #008033;
+    font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .site-header .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .logo {
+        margin-bottom: 0.5rem;
+    }
+
+    .site-title {
+        margin-bottom: 0.25rem;
+    }
+
+    .btn-group {
+        flex-direction: column;
+    }
+
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Accessibility improvements */
+.btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 128, 51, 0.25);
+}
+
+/* Animation for state changes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.result-card,
+.action-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom utilities */
+.text-codecheck {
+    color: #008033;
+}
+
+.bg-codecheck {
+    background-color: #008033;
+}
+
+.border-codecheck {
+    border-color: #008033;
+}
+
+/* Disabled state for buttons */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary:disabled {
+    background-color: #66b366;
+    border-color: #66b366;
+    opacity: 1;
+}
+
+/* Issue preview styling */
+#issue-title-preview {
+    background-color: #f8f9fa;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-weight: 600;
+}
+
+#modal-title {
+    background-color: #f8f9fa;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-weight: 600;
+}
+
+#modal-body {
+    background-color: #f8f9fa;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    font-size: 0.875rem;
+}

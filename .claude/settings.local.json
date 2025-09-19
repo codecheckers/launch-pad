@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:codecheck.org.uk)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm run download-deps:*)",
+      "Bash(npm start)",
+      "Bash(npm run download-marked:*)",
+      "WebFetch(domain:api.github.com)",
+      "Read(//home/daniel/git/codecheck/buddy-exchange/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

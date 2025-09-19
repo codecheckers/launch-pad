@@ -1,0 +1,33 @@
+{
+  "name": "register-starter",
+  "version": "1.0.0",
+  "description": "Single page application for creating new issues in the CODECHECK Register",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "serve": "python3 -m http.server 8000",
+    "download-deps": "npm run download-jquery && npm run download-bootstrap",
+    "download-jquery": "curl -o assets/js/jquery.min.js https://code.jquery.com/jquery-3.7.1.min.js",
+    "download-bootstrap": "curl -o assets/css/bootstrap.min.css https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css && curl -o assets/js/bootstrap.min.js https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codecheckers/register-starter.git"
+  },
+  "keywords": [
+    "codecheck",
+    "register",
+    "github",
+    "javascript",
+    "bootstrap",
+    "jquery"
+  ],
+  "author": "CODECHECK Community",
+  "license": "MIT",
+  "homepage": "https://codecheckers.github.io/register-starter/",
+  "devDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
