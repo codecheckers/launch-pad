@@ -1,19 +1,20 @@
 {
-  "name": "register-starter",
+  "name": "launch-pad",
   "version": "1.0.0",
-  "description": "Single page application for creating new issues in the CODECHECK Register",
+  "description": "CODECHECK Launch Pad - A tool to help create new CODECHECK register issues with next available identifiers and correct labels",
   "main": "index.html",
   "scripts": {
     "start": "python3 -m http.server 8000",
     "serve": "python3 -m http.server 8000",
-    "download-deps": "npm run download-jquery && npm run download-bootstrap && npm run download-papaparse",
+    "download-deps": "npm run download-jquery && npm run download-bootstrap && npm run download-papaparse && npm run download-icons",
     "download-jquery": "curl -o assets/js/jquery.min.js https://code.jquery.com/jquery-3.7.1.min.js",
     "download-bootstrap": "curl -o assets/css/bootstrap.min.css https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css && curl -o assets/js/bootstrap.min.js https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js",
-    "download-papaparse": "curl -o assets/js/papaparse.min.js https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"
+    "download-papaparse": "curl -o assets/js/papaparse.min.js https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js",
+    "download-icons": "mkdir -p assets/images && curl -o assets/images/icon-email.svg https://raw.githubusercontent.com/codecheckers/codecheckers.github.io/master/img/icon-email.svg && curl -o assets/images/icon-github.svg https://raw.githubusercontent.com/codecheckers/codecheckers.github.io/master/img/icon-github.svg && curl -o assets/images/icon-gitlab.svg https://raw.githubusercontent.com/codecheckers/codecheckers.github.io/master/img/icon-gitlab.svg && curl -o assets/images/icon-mastodon.svg https://raw.githubusercontent.com/codecheckers/codecheckers.github.io/master/img/icon-mastodon.svg && curl -o assets/images/icon-linkedin.svg https://raw.githubusercontent.com/codecheckers/codecheckers.github.io/master/img/icon-linkedin.svg && curl -o assets/images/icon-youtube.svg https://raw.githubusercontent.com/codecheckers/codecheckers.github.io/master/img/icon-youtube.svg"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/codecheckers/register-starter.git"
+    "url": "git+https://github.com/codecheckers/launch-pad.git"
   },
   "keywords": [
     "codecheck",
@@ -25,9 +26,7 @@
   ],
   "author": "CODECHECK Community",
   "license": "MIT",
-  "homepage": "https://codecheckers.github.io/register-starter/",
-  "devDependencies": {},
-  "dependencies": {},
+  "homepage": "https://codecheckers.github.io/launch-pad/",
   "engines": {
     "node": ">=14.0.0"
   }

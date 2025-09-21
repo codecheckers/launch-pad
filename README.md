@@ -9,7 +9,10 @@ The app queries the GitHub API to analyze existing issues in both the [testing r
 - 🔢 **Smart Identifier Calculation**: Automatically finds the next available certificate identifier
 - 🏷️ **Unified Template**: Single template for all CODECHECK works
 - 🔄 **Repository Selection**: Toggle between testing and production registers
+- 👥 **Codechecker Assignment**: Search and assign codecheckers from CSV data with auto-complete
+- 📝 **Author Management**: Input and manage author names for certificates
 - 📋 **Template Generation**: Pre-filled issue templates with proper formatting
+- 👁️ **Issue Preview**: Modal preview of GitHub issues before creation
 - 🎯 **Direct GitHub Integration**: One-click issue creation with correct labels
 - 📊 **Repository Statistics**: View register metrics and analysis results
 - 📱 **Responsive Design**: Mobile-friendly interface
@@ -92,12 +95,12 @@ This application is designed for static hosting and is fully compatible with Git
 1. Push your changes to the `main` branch
 2. Enable GitHub Pages in repository settings
 3. Set source to "Deploy from a branch" → `main` → `/ (root)`
-4. Your app will be available at `https://codecheckers.github.io/register-starter`
+4. Your app will be available at `https://codecheckers.github.io/launch-pad`
 
 ## Project Structure
 
 ```txt
-register-starter/
+launch-pad/
 ├── index.html                # Main entry point
 ├── package.json              # Project configuration and scripts
 ├── assets/
@@ -127,7 +130,7 @@ This project uses the following third-party libraries:
 |---------|---------|---------|---------|
 | [jQuery](https://jquery.com/) | 3.7.1 | MIT | DOM manipulation and AJAX requests |
 | [Bootstrap](https://getbootstrap.com/) | 5.3.2 | MIT | CSS framework for responsive design |
-| [Papa Parse](https://www.papaparse.com/) | 5.4.1 | MIT | CSV parsing for codechecker data |
+| [Papa Parse](https://www.papaparse.com/) | 5.4.1 | MIT | CSV parsing for codechecker assignment data |
 
 All libraries are distributed under the MIT License, which is compatible with this project's Apache License 2.0.
 
