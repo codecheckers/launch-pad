@@ -39,20 +39,30 @@ class LaunchPadApp {
         try {
             console.log(`Loading identifier for repository: ${repoConfig.owner}/${repoConfig.repo}`);
 
-            // Fetch all issues from the repository
-            const issues = await this.githubAPI.getRepositoryIssues(repoConfig.owner, repoConfig.repo);
+            // Fetch all issues and recent issues in parallel
+            const [allIssues, recentIssues] = await Promise.all([
+                this.githubAPI.getRepositoryIssues(repoConfig.owner, repoConfig.repo),
+                this.githubAPI.getRecentIssues(repoConfig.owner, repoConfig.repo, 10)
+            ]);
 
             // Extract certificate identifiers
-            const identifiers = this.githubAPI.extractIdentifiers(issues);
+            const identifiers = this.githubAPI.extractIdentifiers(allIssues);
 
             // Calculate next available identifier
             const nextIdentifier = this.githubAPI.calculateNextIdentifier(identifiers);
 
+            // Check for identifier warnings in recent issues
+            const identifierWarnings = this.githubAPI.checkForIdentifierWarnings(recentIssues);
+
             // Calculate statistics
-            const stats = this.calculateStatistics(issues, identifiers);
+            const stats = this.calculateStatistics(allIssues, identifiers);
 
             console.log('Successfully loaded next identifier:', nextIdentifier);
-            this.ui.showResults(nextIdentifier, stats);
+            if (identifierWarnings.length > 0) {
+                console.log(`Found ${identifierWarnings.length} identifier warnings in recent issues`);
+            }
+
+            this.ui.showResults(nextIdentifier, stats, identifierWarnings);
 
         } catch (error) {
             console.error('Failed to load next identifier:', error);

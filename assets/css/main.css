@@ -578,3 +578,9 @@
     font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
     font-size: 0.875rem;
 }
+
+/* Remove bullet points from identifier warnings list */
+#warning-list {
+    list-style: none;
+    padding-left: 0;
+}

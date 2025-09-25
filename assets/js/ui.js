@@ -49,6 +49,8 @@ class LaunchPadUI {
             nextIdentifierDisplay: $('#next-identifier-display'),
             highestIdentifierLink: $('#highest-identifier-link'),
             highestIdentifierIssueLink: $('#highest-identifier-issue-link'),
+            identifierWarnings: $('#identifier-warnings'),
+            warningList: $('#warning-list'),
             authorNames: $('#author-names'),
             issueDescription: $('#issue-description'),
             issueTitlePreview: $('#issue-title-preview'),
@@ -258,7 +260,7 @@ class LaunchPadUI {
     /**
      * Display the next identifier and enable create button
      */
-    showResults(identifierData, stats) {
+    showResults(identifierData, stats, identifierWarnings = []) {
         this.currentIdentifier = identifierData;
         this.currentStats = stats;
 
@@ -273,6 +275,9 @@ class LaunchPadUI {
         } else {
             this.elements.highestIdentifierLink.hide();
         }
+
+        // Display identifier warnings if any
+        this.displayIdentifierWarnings(identifierWarnings);
 
         // Auto-select "id assigned" label when identifier is retrieved
         if (!this.selectedLabels.includes('id assigned')) {
@@ -296,6 +301,33 @@ class LaunchPadUI {
 
         this.hideLoading();
         this.hideError();
+    }
+
+    /**
+     * Display identifier warnings for recent issues
+     */
+    displayIdentifierWarnings(warnings) {
+        if (!warnings || warnings.length === 0) {
+            this.elements.identifierWarnings.hide();
+            return;
+        }
+
+        const warningList = this.elements.warningList;
+        warningList.empty();
+
+        warnings.forEach(warning => {
+            const identifiersText = warning.identifiers.join(', ');
+            const listItem = $(`
+                <li class="mb-1">
+                    Issue <a href="${warning.url}" target="_blank" class="text-decoration-none">#${warning.number}</a>:
+                    "${warning.title}" contains identifier(s) <strong>${identifiersText}</strong>
+                </li>
+            `);
+            warningList.append(listItem);
+        });
+
+        this.elements.identifierWarnings.show();
+        console.log(`Displayed ${warnings.length} identifier warnings`);
     }
 
     /**
@@ -939,6 +971,7 @@ class LaunchPadUI {
         this.elements.issueDescription.val(this.defaultDescriptionTemplate); // Reset to template
         this.elements.issueDescription.removeClass('editing-template');
         this.elements.highestIdentifierLink.hide(); // Hide the highest identifier link
+        this.elements.identifierWarnings.hide(); // Hide identifier warnings
         this.elements.resultsContainer.hide();
         this.elements.statsContainer.hide();
         this.elements.createIssueBtn.prop('disabled', true);

@@ -92,6 +92,16 @@ class GitHubAPI {
     }
 
     /**
+     * Get the 10 most recently updated issues from a repository (without filtering)
+     */
+    async getRecentIssues(owner, repo, count = 10) {
+        const endpoint = `/repos/${owner}/${repo}/issues?state=all&sort=updated&direction=desc&per_page=${count}`;
+        const issues = await this.makeRequest(endpoint);
+        console.log(`Fetched ${issues.length} most recent issues from ${owner}/${repo}`);
+        return issues;
+    }
+
+    /**
      * Extract certificate identifiers from issue titles
      * Only processes issues with the "id assigned" label
      */
@@ -415,6 +425,41 @@ class GitHubAPI {
         return `https://github.com/search?q=${encodeURIComponent(searchQuery)}&type=issues`;
     }
 
+
+    /**
+     * Check for issues with identifiers in title but missing "id assigned" label
+     */
+    checkForIdentifierWarnings(issues) {
+        const warnings = [];
+        const identifierPattern = /(\d{4}-\d{3})/g;
+
+        issues.forEach(issue => {
+            if (!issue.title) return;
+
+            // Check if issue has "id assigned" label
+            const hasIdAssignedLabel = issue.labels && issue.labels.some(label =>
+                label.name && label.name.toLowerCase() === 'id assigned'
+            );
+
+            // Look for identifier patterns in the title
+            const matches = [...issue.title.matchAll(identifierPattern)];
+
+            if (matches.length > 0 && !hasIdAssignedLabel) {
+                const identifiers = matches.map(match => match[1]);
+                warnings.push({
+                    issue: issue,
+                    identifiers: identifiers,
+                    url: issue.html_url,
+                    number: issue.number,
+                    title: issue.title
+                });
+
+                console.log(`Warning: Issue #${issue.number} has identifier(s) ${identifiers.join(', ')} in title but missing "id assigned" label`);
+            }
+        });
+
+        return warnings;
+    }
 
     /**
      * Clear the API cache
